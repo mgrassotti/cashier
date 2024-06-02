@@ -2,7 +2,7 @@ class Checkout
   attr_reader :price_rules, :cart
 
   def initialize(price_rules=[])
-    @price_rules = price_rules
+    @price_rules = price_rules.map{|params| PriceRule.new(params)}
     @cart = []
   end
 
@@ -13,7 +13,11 @@ class Checkout
   end
 
   def calculated_total
-    @total ||= cart.sum{|code| Product.find(code).price}
+    @total ||= cart.sum{|code| Product.find(code).price} - total_discount
+  end
+
+  def total_discount
+    price_rules.sum{|price_rule| price_rule.rule.discount_amount(cart) }
   end
 
   def total
